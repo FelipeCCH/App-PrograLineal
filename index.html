@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Compañía Flair Furniture - Optimizador de Producción</title>
+  <script src="https://cdn.jsdelivr.net/npm/javascript-lp-solver/prod/solver.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fdfdfd;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      color: #003366;
+    }
+    label {
+      display: inline-block;
+      margin: 0.5rem 0;
+    }
+    input {
+      width: 60px;
+      padding: 0.2rem;
+      margin-right: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 10px 0;
+      background-color: #0055a5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003d7a;
+    }
+    pre {
+      background: #f0f0f0;
+      padding: 1rem;
+      border-left: 4px solid #0055a5;
+      white-space: pre-wrap;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Compañía Flair Furniture</h1>
+    <h2>Optimizador de Producción con Programación Lineal</h2>
+
+    <div class="section">
+      <label># Variables (Productos): <input type="number" id="numVariables" value="2" min="1" /></label>
+      <label># Restricciones (Recursos): <input type="number" id="numConstraints" value="2" min="1" /></label>
+      <button id="createForm" type="button">Crear Formulario</button>
+    </div>
+
+    <form id="lpForm" onsubmit="return false;"></form>
+
+    <button id="solveButton" type="button">Resolver</button>
+
+    <h2>Resultado</h2>
+    <pre id="result">Rellena los campos y haz clic en "Resolver"</pre>
+  </div>
+
+  <script>
+    window.addEventListener('load', function () {
+      if (typeof solver === 'undefined') {
+        alert('La librería solver no está cargada correctamente.');
+        return;
+      }
+
+      const createBtn = document.getElementById('createForm');
+      const solveBtn = document.getElementById('solveButton');
+      const form = document.getElementById('lpForm');
+      const resultPre = document.getElementById('result');
+
+      createBtn.addEventListener('click', () => {
+        const n = parseInt(document.getElementById('numVariables').value);
+        const m = parseInt(document.getElementById('numConstraints').value);
+        form.innerHTML = '';
+
+        const objDiv = document.createElement('div');
+        objDiv.innerHTML = '<h3>Función Objetivo (Ganancia por producto)</h3>';
+        for (let i = 1; i <= n; i++) {
+          objDiv.innerHTML += `Producto x${i}: <input type="number" step="any" id="obj_coef_${i}" value="0">`;
+        }
+        form.appendChild(objDiv);
+
+        const constrDiv = document.createElement('div');
+        constrDiv.innerHTML = '<h3>Restricciones de Recursos (≤ Disponibilidad)</h3>';
+        for (let j = 1; j <= m; j++) {
+          let fila = `<div>Recurso ${j}: `;
+          for (let i = 1; i <= n; i++) {
+            fila += `x${i}: <input type="number" step="any" id="constr_${j}_${i}" value="0">`;
+          }
+          fila += ` ≤ <input type="number" step="any" id="rhs_${j}" value="0"></div>`;
+          constrDiv.innerHTML += fila;
+        }
+        form.appendChild(constrDiv);
+      });
+
+      solveBtn.addEventListener('click', () => {
+        const n = parseInt(document.getElementById('numVariables').value);
+        const m = parseInt(document.getElementById('numConstraints').value);
+        const model = { optimize: 'obj', opType: 'max', constraints: {}, variables: {} };
+
+        for (let j = 1; j <= m; j++) {
+          const rhsValue = parseFloat(document.getElementById(`rhs_${j}`).value);
+          model.constraints[`c${j}`] = { max: isNaN(rhsValue) ? 0 : rhsValue };
+        }
+
+        for (let i = 1; i <= n; i++) {
+          const varName = `x${i}`;
+          model.variables[varName] = { obj: parseFloat(document.getElementById(`obj_coef_${i}`).value) || 0 };
+          for (let j = 1; j <= m; j++) {
+            const coef = parseFloat(document.getElementById(`constr_${j}_${i}`).value);
+            model.variables[varName][`c${j}`] = isNaN(coef) ? 0 : coef;
+          }
+        }
+
+        try {
+          const results = solver.Solve(model);
+          let output = `📦 Producción Óptima:
+-------------------------\n`;
+          for (let i = 1; i <= n; i++) {
+            output += `Producto x${i}: ${results[`x${i}`] ?? 0}\n`;
+          }
+          output += `\n💰 Ganancia máxima: $${results.result ?? 0}`;
+          resultPre.textContent = output;
+        } catch (err) {
+          console.error('Error al resolver el modelo:', err);
+          resultPre.textContent = '⚠️ Error al resolver el modelo. Revisa la consola para más detalles.';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
