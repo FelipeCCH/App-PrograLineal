@@ -2,127 +2,370 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Compañía Flair Furniture - Optimizador de Producción</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flair Furniture - Optimizador de Producción</title>
+  <link rel="icon" type="image/x-icon" href="Logo-Flair-Funiture.ico">
   <script src="https://cdn.jsdelivr.net/npm/javascript-lp-solver/prod/solver.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #8B5A2B; /* Madera oscura */
+      --secondary: #D2B48C; /* Madera clara */
+      --accent: #A67C52; /* Madera media */
+      --light: #F5F5F0; /* Fondo claro */
+      --dark: #3E3E3E; /* Texto oscuro */
+      --success: #4CAF50; /* Verde para resultados */
+    }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #fdfdfd;
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--light);
       margin: 0;
-      padding: 2rem;
-      color: #333;
+      padding: 0;
+      color: var(--dark);
+      line-height: 1.6;
     }
+    
     .container {
-      max-width: 800px;
-      margin: auto;
-      background-color: #ffffff;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      margin: 2rem auto;
+      background-color: white;
+      padding: 2.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid rgba(0,0,0,0.05);
     }
-    h1, h2, h3 {
-      color: #003366;
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(139, 90, 43, 0.2);
     }
-    label {
-      display: inline-block;
+    
+    .header img {
+      height: 80px;
+      margin-bottom: 1rem;
+    }
+    
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
       margin: 0.5rem 0;
+      color: var(--primary);
+      font-weight: 700;
     }
-    input {
-      width: 60px;
-      padding: 0.2rem;
-      margin-right: 10px;
+    
+    .header p {
+      font-style: italic;
+      color: var(--accent);
+      margin: 0;
+      font-size: 1.1rem;
     }
+    
+    h2, h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--primary);
+    }
+    
+    h2 {
+      font-size: 1.8rem;
+      margin-top: 2rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 0.5rem;
+    }
+    
+    h3 {
+      font-size: 1.4rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+    
+    label {
+      display: block;
+      margin: 0.8rem 0 0.4rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    input, select {
+      padding: 0.7rem;
+      margin: 0.2rem 0 0.8rem;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-family: 'Montserrat', sans-serif;
+      transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(139, 90, 43, 0.2);
+    }
+    
+    input[type="number"] {
+      width: 100px;
+    }
+    
+    input[type="text"] {
+      width: 120px;
+    }
+    
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+    
+    .input-group input {
+      margin-bottom: 0;
+    }
+    
     button {
-      padding: 8px 16px;
-      margin: 10px 0;
-      background-color: #0055a5;
+      padding: 0.8rem 1.8rem;
+      margin: 1rem 0.8rem 1rem 0;
+      background-color: var(--primary);
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
     }
+    
     button:hover {
-      background-color: #003d7a;
+      background-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    pre {
-      background: #f0f0f0;
-      padding: 1rem;
-      border-left: 4px solid #0055a5;
-      white-space: pre-wrap;
+    
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
+    
     .section {
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
+      padding: 1.5rem;
+      background-color: rgba(210, 180, 140, 0.05);
+      border-radius: 6px;
+      border-left: 4px solid var(--secondary);
+    }
+    
+    #resultBox {
+      background: white;
+      border: 1px solid var(--secondary);
+      border-radius: 6px;
+      padding: 1.8rem;
+      color: var(--dark);
+      font-size: 1rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    #resultBox strong {
+      color: var(--primary);
+    }
+    
+    .constraint-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 1.5rem;
+    }
+    
+    .product-card {
+      display: inline-block;
+      padding: 1rem 1.5rem;
+      margin: 0.5rem;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border-left: 3px solid var(--accent);
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+      
+      input[type="text"], input[type="number"], select {
+        width: 100%;
+      }
+      
+      .constraint-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .btn-group button {
+        width: 100%;
+        margin: 0.5rem 0;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Compañía Flair Furniture</h1>
-    <h2>Optimizador de Producción con Programación Lineal</h2>
+    <div class="header">
+      <img id="companyLogo" alt="Logo Flair Furniture">
+      <h1>Flair Furniture</h1>
+      <p><em>Artesanía en muebles desde 2025</em></p>
+    </div>
+
+    <h2>Optimizador de Producción</h2>
+    <p>Maximiza la eficiencia de tu taller de muebles calculando la combinación óptima de productos a fabricar con los recursos disponibles.</p>
 
     <div class="section">
-      <label># Variables (Productos): <input type="number" id="numVariables" value="2" min="1" /></label>
-      <label># Restricciones (Recursos): <input type="number" id="numConstraints" value="2" min="1" /></label>
-      <button id="createForm" type="button">Crear Formulario</button>
+      <h3>Configuración inicial</h3>
+      <div class="input-group">
+        <label>Número de productos: <input type="number" id="numVariables" value="2" min="1" class="input-number"/></label>
+        <label>Número de recursos: <input type="number" id="numConstraints" value="2" min="1" class="input-number"/></label>
+      </div>
+      <button id="createForm" type="button">Generar formulario</button>
     </div>
 
     <form id="lpForm" onsubmit="return false;"></form>
 
-    <button id="solveButton" type="button">Resolver</button>
+    <div class="btn-group">
+      <button id="solveButton" type="button">Calcular producción óptima</button>
+      <button id="downloadPDF" type="button" disabled>Descargar reporte</button>
+    </div>
 
-    <h2>Resultado</h2>
-    <pre id="result">Rellena los campos y haz clic en "Resolver"</pre>
+    <h2>Resultados</h2>
+    <div id="resultBox"><pre id="result">Complete los campos requeridos y haga clic en "Calcular producción óptima" para ver los resultados.</pre></div>
   </div>
 
   <script>
     window.addEventListener('load', function () {
-      if (typeof solver === 'undefined') {
-        alert('La librería solver no está cargada correctamente.');
-        return;
-      }
-
       const createBtn = document.getElementById('createForm');
       const solveBtn = document.getElementById('solveButton');
+      const downloadBtn = document.getElementById('downloadPDF');
       const form = document.getElementById('lpForm');
       const resultPre = document.getElementById('result');
+      const logoImg = document.getElementById('companyLogo');
+
+      // Configurar el logo (puedes reemplazar esta URL con la de tu logo real)
+      logoImg.src = 'Logo-Flair-Funiture.ico';
+      logoImg.style.maxWidth = '300px';
+      logoImg.style.height = 'auto';
 
       createBtn.addEventListener('click', () => {
         const n = parseInt(document.getElementById('numVariables').value);
         const m = parseInt(document.getElementById('numConstraints').value);
         form.innerHTML = '';
 
+        // Sección de función objetivo
         const objDiv = document.createElement('div');
-        objDiv.innerHTML = '<h3>Función Objetivo (Ganancia por producto)</h3>';
+        objDiv.className = 'section';
+        objDiv.innerHTML = '<h3>Función Objetivo (Beneficio por producto)</h3>';
+        
         for (let i = 1; i <= n; i++) {
-          objDiv.innerHTML += `Producto x${i}: <input type="number" step="any" id="obj_coef_${i}" value="0">`;
+          objDiv.innerHTML += `
+            <div class="product-card">
+              <label>Producto ${i}</label>
+              <input type="text" id="var_name_${i}" value="Mueble ${i}" placeholder="Nombre">
+              <input type="number" min="0" step="any" id="obj_coef_${i}" value="0" placeholder="Beneficio ($)">
+            </div>`;
         }
         form.appendChild(objDiv);
 
+        // Sección de restricciones
         const constrDiv = document.createElement('div');
-        constrDiv.innerHTML = '<h3>Restricciones de Recursos (≤ Disponibilidad)</h3>';
+        constrDiv.className = 'section';
+        constrDiv.innerHTML = '<h3>Restricciones de Recursos</h3>';
+        constrDiv.innerHTML += '<p>Especifique cuánto de cada recurso consume cada producto y la cantidad disponible.</p>';
+        
         for (let j = 1; j <= m; j++) {
-          let fila = `<div>Recurso ${j}: `;
+          let fila = `<div class="constraint-row">
+                        <div>
+                          <label>Recurso ${j}</label>
+                          <input type="text" id="res_name_${j}" value="Recurso ${j}" placeholder="Nombre recurso">
+                        </div>`;
+          
           for (let i = 1; i <= n; i++) {
-            fila += `x${i}: <input type="number" step="any" id="constr_${j}_${i}" value="0">`;
+            fila += `<div>
+                      <label>Producto ${i}</label>
+                      <input type="number" min="0" step="any" id="constr_${j}_${i}" value="0" placeholder="Cantidad">
+                    </div>`;
           }
-          fila += ` ≤ <input type="number" step="any" id="rhs_${j}" value="0"></div>`;
+          
+          fila += `<div>
+                      <label>Operador</label>
+                      <select id="op_${j}">
+                        <option value="max" selected>≤ (Máximo disponible)</option>
+                        <option value="equal">= (Exactamente)</option>
+                        <option value="min">≥ (Mínimo requerido)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label>Cantidad</label>
+                      <input type="number" min="0" step="any" id="rhs_${j}" value="0" placeholder="Total disponible">
+                    </div>
+                  </div>`;
           constrDiv.innerHTML += fila;
         }
         form.appendChild(constrDiv);
       });
 
       solveBtn.addEventListener('click', () => {
+        if (typeof solver === 'undefined') {
+          alert('Error: No se pudo cargar el motor de cálculo. Por favor recarga la página.');
+          return;
+        }
+
         const n = parseInt(document.getElementById('numVariables').value);
         const m = parseInt(document.getElementById('numConstraints').value);
         const model = { optimize: 'obj', opType: 'max', constraints: {}, variables: {} };
 
+        const rhsValues = [];
+        const resourceNames = [];
+        const resourceOperators = [];
+
+        // Recoger datos de restricciones
         for (let j = 1; j <= m; j++) {
           const rhsValue = parseFloat(document.getElementById(`rhs_${j}`).value);
-          model.constraints[`c${j}`] = { max: isNaN(rhsValue) ? 0 : rhsValue };
+          const resName = document.getElementById(`res_name_${j}`).value || `Recurso ${j}`;
+          const operator = document.getElementById(`op_${j}`).value;
+          rhsValues.push(rhsValue);
+          resourceNames.push(resName);
+          resourceOperators.push(operator);
+          model.constraints[`c${j}`] = { [operator]: isNaN(rhsValue) ? 0 : rhsValue };
         }
 
+        // Recoger datos de variables
+        const variableNames = [];
         for (let i = 1; i <= n; i++) {
-          const varName = `x${i}`;
+          const varName = document.getElementById(`var_name_${i}`).value || `Producto ${i}`;
+          variableNames.push(varName);
           model.variables[varName] = { obj: parseFloat(document.getElementById(`obj_coef_${i}`).value) || 0 };
           for (let j = 1; j <= m; j++) {
             const coef = parseFloat(document.getElementById(`constr_${j}_${i}`).value);
@@ -132,17 +375,122 @@
 
         try {
           const results = solver.Solve(model);
-          let output = `📦 Producción Óptima:
--------------------------\n`;
-          for (let i = 1; i <= n; i++) {
-            output += `Producto x${i}: ${results[`x${i}`] ?? 0}\n`;
+          let output = `<strong style="color: var(--primary); font-size: 1.1em;">📦 PLAN DE PRODUCCIÓN ÓPTIMO</strong><br><br>`;
+          
+          // Producción recomendada
+          output += `<strong>Producción recomendada:</strong><br>`;
+          for (let i = 0; i < n; i++) {
+            const name = variableNames[i];
+            output += `&nbsp;&nbsp;• ${name}: <strong>${(results[name] ?? 0).toFixed(2)} unidades</strong><br>`;
           }
-          output += `\n💰 Ganancia máxima: $${results.result ?? 0}`;
-          resultPre.textContent = output;
+
+          // Uso de recursos
+          output += `<br><strong>📊 UTILIZACIÓN DE RECURSOS</strong><br>`;
+          for (let j = 0; j < m; j++) {
+            let uso = 0;
+            for (let i = 0; i < n; i++) {
+              const cant = results[variableNames[i]] ?? 0;
+              const coef = parseFloat(document.getElementById(`constr_${j+1}_${i+1}`).value);
+              uso += cant * coef;
+            }
+            const disponible = rhsValues[j];
+            const holgura = disponible - uso;
+            const operadorSimbolo = resourceOperators[j] === 'max' ? '≤' : resourceOperators[j] === 'min' ? '≥' : '=';
+            
+            output += `<br><strong>${resourceNames[j]}:</strong><br>`;
+            output += `&nbsp;&nbsp;• Usado: <strong>${uso.toFixed(2)}</strong> ${operadorSimbolo} Disponible: <strong>${disponible}</strong><br>`;
+            output += `&nbsp;&nbsp;• Holgura: <strong style="color: ${holgura >= 0 ? 'var(--success)' : '#e53935'}">${holgura.toFixed(2)}</strong>`;
+          }
+
+          // Beneficio total
+          output += `<br><br><strong style="color: var(--success);">💰 BENEFICIO TOTAL ESTIMADO: $${(results.result ?? 0).toFixed(2)}</strong>`;
+          
+          resultPre.innerHTML = output;
+          downloadBtn.disabled = false;
+          
+          // Scroll suave a los resultados
+          document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
         } catch (err) {
           console.error('Error al resolver el modelo:', err);
-          resultPre.textContent = '⚠️ Error al resolver el modelo. Revisa la consola para más detalles.';
+          resultPre.innerHTML = '<span style="color: #e53935;">⚠️ Error al calcular la producción óptima. Verifique que todos los datos ingresados son correctos.</span>';
+          downloadBtn.disabled = true;
         }
+      });
+
+      downloadBtn.addEventListener('click', () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Configurar fuentes para caracteres especiales
+        doc.setFont('helvetica');
+        
+        // Encabezado del PDF
+        doc.setFontSize(18);
+        doc.setTextColor(139, 90, 43);
+        doc.setFont(undefined, 'bold');
+        doc.text("Flair Furniture - Plan de Producción Óptimo", 15, 20);
+        
+        // Agregar logo (si está disponible)
+        if(logoImg.src && !logoImg.src.includes('placeholder')) {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = logoImg.naturalWidth;
+          canvas.height = logoImg.naturalHeight;
+          ctx.drawImage(logoImg, 0, 0);
+          const imgData = canvas.toDataURL('image/png');
+          doc.addImage(imgData, 'PNG', 15, 25, 50, 20);
+        }
+        
+        doc.setFontSize(11);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont(undefined, 'normal');
+        doc.text("Fecha: " + new Date().toLocaleDateString('es-ES', { 
+          year: 'numeric', month: 'long', day: 'numeric', 
+          hour: '2-digit', minute: '2-digit' 
+        }), 15, 50);
+        
+        // Contenido del PDF
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        
+        // Obtener texto sin emojis y con símbolos corregidos
+        const resultText = document.getElementById('result').innerText
+          .replace(/[📦📊💰⚠️]/g, '') // Eliminar emojis
+          .replace(/≤/g, '<=') // Reemplazar símbolos problemáticos
+          .replace(/≥/g, '>=');
+        
+        const lines = resultText.split('\n');
+        let yPosition = 60;
+        
+        doc.setFont(undefined, 'bold');
+        doc.text("RESUMEN DE PRODUCCIÓN", 15, yPosition);
+        yPosition += 8;
+        
+        doc.setFont(undefined, 'normal');
+        
+        lines.forEach(line => {
+          if (line.includes("BENEFICIO TOTAL")) {
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(76, 175, 80);
+          }
+          
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 20;
+          }
+          
+          // Reemplazar símbolos especiales para mejor compatibilidad
+          const pdfLine = line.replace(/[•]/g, '-');
+          doc.text(pdfLine, 15, yPosition);
+          yPosition += 7;
+          
+          if (line.includes("BENEFICIO TOTAL")) {
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(0, 0, 0);
+          }
+        });
+        
+        doc.save(`Plan_Produccion_Flair_${new Date().toISOString().slice(0,10)}.pdf`);
       });
     });
   </script>
