@@ -366,7 +366,7 @@
         for (let i = 1; i <= n; i++) {
           const varName = document.getElementById(`var_name_${i}`).value || `Producto ${i}`;
           variableNames.push(varName);
-          model.variables[varName] = { obj: parseFloat(document.getElementById(`obj_coef_${i}`).value) || 0 };
+          model.variables[varName] = { obj: parseFloat(document.getElementById(`obj_coef_${i}`).value) || 0, max: 999 };
           for (let j = 1; j <= m; j++) {
             const coef = parseFloat(document.getElementById(`constr_${j}_${i}`).value);
             model.variables[varName][`c${j}`] = isNaN(coef) ? 0 : coef;
@@ -375,13 +375,17 @@
 
         try {
           const results = solver.Solve(model);
+          if (!isFinite(results.result)) {
+            throw new Error("La solución no es finita. Revisa las restricciones.");
+          }
+
           let output = `<strong style="color: var(--primary); font-size: 1.1em;">📦 PLAN DE PRODUCCIÓN ÓPTIMO</strong><br><br>`;
           
           // Producción recomendada
           output += `<strong>Producción recomendada:</strong><br>`;
           for (let i = 0; i < n; i++) {
             const name = variableNames[i];
-            output += `&nbsp;&nbsp;• ${name}: <strong>${(results[name] ?? 0).toFixed(2)} unidades</strong><br>`;
+            output += `&nbsp;&nbsp;• ${name}: <strong>${Math.round(results[name] ?? 0)} unidades</strong><br>`;
           }
 
           // Uso de recursos
@@ -394,16 +398,21 @@
               uso += cant * coef;
             }
             const disponible = rhsValues[j];
-            const holgura = disponible - uso;
+            let holgura = 0;
+            if (resourceOperators[j] === 'max') {
+              holgura = disponible - uso;
+            } else if (resourceOperators[j] === 'min' || resourceOperators[j] === 'equal') {
+              holgura = uso - disponible;
+            }
             const operadorSimbolo = resourceOperators[j] === 'max' ? '≤' : resourceOperators[j] === 'min' ? '≥' : '=';
             
             output += `<br><strong>${resourceNames[j]}:</strong><br>`;
-            output += `&nbsp;&nbsp;• Usado: <strong>${uso.toFixed(2)}</strong> ${operadorSimbolo} Disponible: <strong>${disponible}</strong><br>`;
-            output += `&nbsp;&nbsp;• Holgura: <strong style="color: ${holgura >= 0 ? 'var(--success)' : '#e53935'}">${holgura.toFixed(2)}</strong>`;
+            output += `&nbsp;&nbsp;• Usado: <strong>${Math.round(uso)}</strong> ${operadorSimbolo} Disponible: <strong>${Math.round(disponible)}</strong><br>`;
+            output += `&nbsp;&nbsp;• Holgura: <strong style="color: ${holgura >= 0 ? 'var(--success)' : '#e53935'}">${Math.round(holgura)}</strong>`;
           }
 
           // Beneficio total
-          output += `<br><br><strong style="color: var(--success);">💰 BENEFICIO TOTAL ESTIMADO: $${(results.result ?? 0).toFixed(2)}</strong>`;
+          output += `<br><br><strong style="color: var(--success);">💰 BENEFICIO TOTAL ESTIMADO: $${Math.round(results.result ?? 0)}</strong>`;
           
           resultPre.innerHTML = output;
           downloadBtn.disabled = false;
